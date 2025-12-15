@@ -1,217 +1,381 @@
 # STIHL Timbersports Data Scraper
 
-A Python web scraper for collecting Underhand Chop and Standing Block Chop times from the STIHL Timbersports database.
+## PURPOSE
 
-## Features
+This Python web scraper extracts competition data from the STIHL Timbersports official database (https://data.stihl-timbersports.com). It specifically focuses on two disciplines:
+- **Underhand Chop (UH)**
+- **Standing Block Chop (SB)**
 
-- ✅ Scrapes Underhand Chop and Standing Block Chop results
-- ✅ Extracts: times, dates, competitors, wood species/size, rankings, and more
-- ✅ Filter by season (2025, 2024, etc.)
-- ✅ Filter by athlete name
-- ✅ Exports to Excel with multiple sheets
-- ✅ Respectful scraping with configurable delays
-- ✅ Detailed athlete summaries
+The scraper collects times, competitors, wood specifications, event details, and special markers (world records, personal bests, etc.) and exports everything to Excel files formatted for use in other programs.
 
-## Installation
+## WHAT PROBLEM DOES THIS SOLVE?
 
-1. Install Python 3.8 or higher
+The STIHL Timbersports website has competition data, but:
+- No easy way to export data
+- No way to filter by specific athletes
+- No way to analyze trends across seasons
+- Data is spread across hundreds of individual event pages
 
-2. Install dependencies:
+This scraper solves that by:
+- Automatically collecting data from multiple events
+- Organizing it into structured Excel files
+- Filtering by season or athlete
+- Providing clean, ready-to-use data with specific column format
+
+## WHAT YOU GET
+
+### Excel Output Format
+The scraper creates Excel files with **exactly 9 columns** in this order:
+
+1. **Competitor profile URL** - Direct link to athlete's profile
+2. **Competitor Name** - Full athlete name
+3. **Discipline** - "SB" (Standing Block Chop) or "UH" (Underhand Chop)
+4. **Time** - Competition time in seconds
+5. **Size** - Wood diameter in millimeters (converted from centimeters)
+6. **Species** - Wood type (e.g., "WhitePine", "Poplar")
+7. **Event Date** - Date of competition
+8. **Event Name** - Full event name
+9. **Special Markers** - WR (World Record), NR (National Record), PB (Personal Best), SB (Season Best)
+
+### Multiple Sheets
+Each Excel file contains:
+- **Results** - All data
+- **SB_Results** - Only Standing Block Chop
+- **UH_Results** - Only Underhand Chop
+- **Athlete Summary** - Best times per athlete/discipline
+
+## HOW TO USE IT
+
+### Installation
+
+1. **Install Python 3.8 or higher**
+   - Download from https://python.org
+   - Make sure to check "Add Python to PATH" during installation
+
+2. **Install required packages**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+### Two Ways to Run
+
+#### METHOD 1: Interactive Mode (Easiest)
 ```bash
-pip install -r requirements.txt
+python interactive_scraper.py
+```
+Follow the on-screen menus. No command line knowledge needed.
+
+#### METHOD 2: Command Line
+```bash
+python stihl_timbersports_scraper.py [options]
 ```
 
-## Usage
+## WHAT WORKS RELIABLY
 
-### Basic Usage - Scrape All Events
+### ✅ Scraping by Season (RECOMMENDED)
 
+**Get all 2024 competitions:**
 ```bash
-python stihl_timbersports_scraper.py
-```
-
-This will scrape all available events and save results to `stihl_timbersports_results.xlsx`
-
-### Filter by Season
-
-```bash
-# Scrape only 2025 events
-python stihl_timbersports_scraper.py --season 2025
-
-# Scrape only 2024 events
 python stihl_timbersports_scraper.py --season 2024
 ```
 
-### Filter by Athlete
+**Get all 2023 competitions:**
+```bash
+python stihl_timbersports_scraper.py --season 2023
+```
+
+**Get multiple seasons:**
+```bash
+python stihl_timbersports_scraper.py --seasons "2024,2023,2022"
+```
+
+**Get last 5 years:**
+```bash
+python stihl_timbersports_scraper.py --all-seasons
+```
+
+**Then filter in Excel** by athlete name - this is the most reliable method.
+
+### ✅ Quick Testing
+
+**Test with 5 recent events:**
+```bash
+python stihl_timbersports_scraper.py --limit 5
+```
+
+**Test with 10 events from 2024:**
+```bash
+python stihl_timbersports_scraper.py --season 2024 --limit 10
+```
+
+### ✅ Custom Output Filename
 
 ```bash
-# Get all results for Matthew Cogar
-python stihl_timbersports_scraper.py --athlete "Cogar"
-
-# Get all results for Nathaniel Hodges
-python stihl_timbersports_scraper.py --athlete "Hodges"
-
-# Get all results for Erin LaVoie
-python stihl_timbersports_scraper.py --athlete "LaVoie"
+python stihl_timbersports_scraper.py --season 2024 --output my_data.xlsx
 ```
 
-### Limit Number of Events
+## WHAT DOESN'T WORK RELIABLY
+
+### ⚠️ Direct Athlete Search (Known Issue)
+
+The `--athlete "NAME"` option is **not currently reliable**. 
+
+**Why:** The athlete profile pages have complex navigation structures that make it difficult to scrape all historical results consistently.
+
+**Workaround:** Use season scraping instead:
+1. Scrape the season(s) you want
+2. Open the Excel file
+3. Filter by athlete name in Excel
+
+**Example:**
+```bash
+# Get all 2024 data
+python stihl_timbersports_scraper.py --season 2024 --output 2024_all.xlsx
+
+# Then in Excel:
+# - Open 2024_all.xlsx
+# - Click "Competitor Name" column
+# - Use Excel filter to show only "Hodges" or "Cogar"
+# - Copy filtered results to new file if needed
+```
+
+## COMMAND LINE OPTIONS
+
+```
+--season YEAR              Single season (e.g., 2024, 2023, 2016)
+--seasons "YEAR,YEAR"      Multiple seasons (e.g., "2024,2023")
+--all-seasons              Last 5 years (2025,2024,2023,2022,2021)
+--limit NUMBER             Limit number of events to scrape
+--output FILENAME          Custom output filename (.xlsx)
+--delay SECONDS            Delay between requests (default: 1.0)
+```
+
+## TYPICAL USE CASES
+
+### Use Case 1: Track Athlete Performance Over Time
+
+**Goal:** Get all of Matthew Cogar's 2024 results
+
+**Steps:**
+1. Scrape 2024 season: `python stihl_timbersports_scraper.py --season 2024 --output 2024_data.xlsx`
+2. Open `2024_data.xlsx` in Excel
+3. Filter "Competitor Name" column for "COGAR"
+4. Analyze his times, see progression, identify personal bests
+
+### Use Case 2: Compare Athletes in a Season
+
+**Goal:** Compare top athletes in 2024
+
+**Steps:**
+1. Scrape 2024: `python stihl_timbersports_scraper.py --season 2024`
+2. Open in Excel
+3. Use pivot tables or filters to compare times
+4. Sort by Time column to see fastest performances
+
+### Use Case 3: Build Historical Database
+
+**Goal:** Create complete database of recent years
+
+**Steps:**
+1. Scrape multiple years: `python stihl_timbersports_scraper.py --all-seasons --output complete_db.xlsx`
+2. Wait 30-60 minutes (this scrapes a lot of data)
+3. Get comprehensive dataset for analysis
+
+### Use Case 4: Quick Sample for Testing
+
+**Goal:** See what the data looks like
+
+**Steps:**
+1. Quick test: `python stihl_timbersports_scraper.py --limit 5 --output test.xlsx`
+2. Wait ~30 seconds
+3. Open `test.xlsx` to see sample data
+
+## HOW LONG DOES IT TAKE?
+
+- **5 events:** ~30 seconds
+- **Single season (50-70 events):** 10-15 minutes
+- **Multiple seasons:** 10-15 minutes per season
+- **Last 5 years (--all-seasons):** 30-60 minutes
+
+The delay is intentional to be respectful to the server. Don't reduce it below 1.0 seconds.
+
+## TROUBLESHOOTING
+
+### "No results found"
+- **Check season year:** Make sure that year has events (2024, 2023 definitely work)
+- **Try with --limit 5:** Test with small sample first
+- **Check internet connection:** Scraper needs stable internet
+
+### "Taking too long"
+- **This is normal:** Event scraping takes time due to respectful delays
+- **Use --limit:** Test with smaller samples first
+- **Be patient:** A full season takes 10-15 minutes
+
+### "Can't find athlete"
+- **Use season scraping:** `--season 2024` then filter in Excel
+- **Don't use --athlete flag:** This feature is not reliable currently
+
+### "pip is not recognized"
+- **Try:** `pip3 install -r requirements.txt`
+- **Or:** Reinstall Python with "Add to PATH" checked
+
+### "python is not recognized"
+- **Try:** `python3 interactive_scraper.py`
+- **Or:** Add Python to system PATH
+
+## INTERACTIVE MODE
+
+For easier use without command line arguments:
 
 ```bash
-# Scrape only the 10 most recent events
-python stihl_timbersports_scraper.py --limit 10
-
-# Scrape 5 events from 2025 for a specific athlete
-python stihl_timbersports_scraper.py --season 2025 --limit 5 --athlete "Hodges"
+python interactive_scraper.py
 ```
 
-### Custom Output File
+You'll get a menu:
+```
+1. Scrape specific athlete's complete history
+2. Scrape multiple athletes
+3. Scrape a single season
+4. Scrape multiple seasons
+5. Scrape last 5 years (2021-2025)
+6. Quick test (5 recent events)
+7. Exit
+```
 
+**Note:** Option 1 & 2 (athlete search) have known reliability issues. Use option 3 (season scraping) instead.
+
+## TECHNICAL DETAILS
+
+### How It Works
+
+1. **Fetches event list** from Results page (filtered by season if specified)
+2. **Visits each event page** one at a time
+3. **Finds Underhand and Standing Block sections** in each event
+4. **Extracts table data:** times, athletes, wood specs, rankings
+5. **Converts measurements:** CM to MM for wood size
+6. **Abbreviates disciplines:** "Standing Block Chop" → "SB", "Underhand Chop" → "UH"
+7. **Exports to Excel** with multiple sheets
+
+### What Makes This Different
+
+- **Specific format:** Outputs exactly 9 columns needed for your other program
+- **Clean data:** Automatic conversion (CM to MM), abbreviation (SB/UH)
+- **Multiple sheets:** Organized by discipline for easy access
+- **No extra columns:** Only essential data, nothing extraneous
+
+### Limitations
+
+- **Only SB and UH:** Other disciplines (Stock Saw, Single Buck, etc.) are not included
+- **Text data only:** Times are stored as text, not calculated values
+- **Website dependent:** If the STIHL website changes structure, scraper may break
+- **Rate limited:** 1 second delay between requests (can't be faster)
+
+## BEST PRACTICES
+
+1. **Always test first**
+   ```bash
+   python stihl_timbersports_scraper.py --season 2024 --limit 5
+   ```
+
+2. **Use season scraping, not athlete search**
+   - Season scraping is reliable
+   - Filter in Excel afterwards
+
+3. **Be patient**
+   - Full seasons take 10-15 minutes
+   - This is normal and expected
+
+4. **Save different files for different queries**
+   ```bash
+   python stihl_timbersports_scraper.py --season 2024 --output 2024.xlsx
+   python stihl_timbersports_scraper.py --season 2023 --output 2023.xlsx
+   ```
+
+5. **Start with recent seasons**
+   - 2024, 2023 have the most data
+   - Older years may have fewer events
+
+## ETHICAL USE
+
+- **Be respectful:** Don't reduce the delay below 1.0 seconds
+- **Personal use:** This is for personal analysis and research
+- **Data belongs to STIHL:** This scraper just helps you access it
+- **No server overload:** The built-in delays prevent this
+
+## EXAMPLES THAT WORK
+
+### Example 1: Get 2024 Season
 ```bash
-python stihl_timbersports_scraper.py --output my_results.xlsx
+python stihl_timbersports_scraper.py --season 2024 --output 2024_complete.xlsx
 ```
+**Result:** All 2024 events with SB/UH times
 
-### Combine Multiple Filters
-
+### Example 2: Get Recent History
 ```bash
-# Scrape 2025 events for Nathaniel Hodges, output to custom file
-python stihl_timbersports_scraper.py --season 2025 --athlete "Hodges" --output hodges_2025.xlsx
-
-# Get top 20 events from 2024 for athletes with "Matt" in their name
-python stihl_timbersports_scraper.py --season 2024 --limit 20 --athlete "Matt"
+python stihl_timbersports_scraper.py --seasons "2024,2023,2022" --output recent_3years.xlsx
 ```
+**Result:** Three years of competition data
 
-### Adjust Scraping Speed
-
+### Example 3: Quick Test
 ```bash
-# Slower scraping (2 second delay between requests - more polite)
-python stihl_timbersports_scraper.py --delay 2.0
-
-# Faster scraping (0.5 second delay - use cautiously)
-python stihl_timbersports_scraper.py --delay 0.5
-```
-
-## Output Format
-
-The scraper creates an Excel file with multiple sheets:
-
-### Sheet 1: Results
-Contains all scraped data with these columns (in this exact order):
-1. **Competitor profile URL**: Direct link to athlete's profile
-2. **Competitor Name**: Athlete's full name
-3. **Discipline**: "SB" (Standing Block Chop) or "UH" (Underhand Chop)
-4. **Time**: Competition time in seconds
-5. **Size**: Wood diameter in millimeters (converted from cm)
-6. **Species**: Wood species (e.g., "WhitePine", "Poplar")
-7. **Event Date**: Date of the event
-8. **Event Name**: Full event name
-9. **Special Markers**: WR (World Record), NR (National Record), PB (Personal Best), SB (Season Best)
-
-### Sheet 2: SB_Results
-All Standing Block Chop results with the same columns
-
-### Sheet 3: UH_Results
-All Underhand Chop results with the same columns
-
-### Sheet 4: Athlete Summary
-Summary showing:
-- Competitor Name
-- Discipline (SB or UH)
-- Best Time
-- Number of Events competed
-
-## Command Line Options
-
-```
---season YEAR         Filter by season (e.g., 2025, 2024)
---limit NUMBER        Limit number of events to scrape
---athlete NAME        Filter by athlete name (partial match, case-insensitive)
---output FILENAME     Output Excel filename (default: stihl_timbersports_results.xlsx)
---delay SECONDS       Delay between requests in seconds (default: 1.0)
-```
-
-## Examples for Common Use Cases
-
-### Get All Results for a Specific Athlete
-
-```bash
-# Get all Nathaniel Hodges results
-python stihl_timbersports_scraper.py --athlete "Nathaniel HODGES" --output hodges_all.xlsx
-```
-
-### Compare Athletes from 2025
-
-```bash
-# Get 2025 results for comparison
-python stihl_timbersports_scraper.py --season 2025 --output 2025_comparison.xlsx
-```
-
-### Quick Sample of Recent Events
-
-```bash
-# Just get the 5 most recent events to see what's available
 python stihl_timbersports_scraper.py --limit 5 --output sample.xlsx
 ```
+**Result:** 5 recent events as a test
 
-### Track Specific Athletes Over Time
-
+### Example 4: Specific Year
 ```bash
-# Get all Matt Cogar results
-python stihl_timbersports_scraper.py --athlete "Matt COGAR" --output cogar_history.xlsx
-
-# Get all results for athletes named "Matt"
-python stihl_timbersports_scraper.py --athlete "Matt" --output matts.xlsx
+python stihl_timbersports_scraper.py --season 2016 --output 2016_data.xlsx
 ```
+**Result:** 2016 events (if available)
 
-## Using as a Python Module
+## NEED HELP?
 
-You can also import and use the scraper in your own Python code:
+1. **Read START_HERE.md** - Quickest way to get started
+2. **Read INTERACTIVE_GUIDE.md** - For interactive mode help
+3. **Read SAMPLE_OUTPUT_FORMAT.md** - See what the Excel looks like
+4. **Check troubleshooting section** - Common issues above
 
-```python
-from stihl_timbersports_scraper import StihlTimberScraper
+## FILES INCLUDED
 
-# Create scraper instance
-scraper = StihlTimberScraper(delay=1.0)
+- **stihl_timbersports_scraper.py** - Main scraper (command line)
+- **interactive_scraper.py** - Interactive menu version
+- **requirements.txt** - Python packages needed
+- **run_scraper.bat** - Windows launcher
+- **run_scraper.sh** - Mac/Linux launcher
+- **START_HERE.md** - Quick start guide
+- **INTERACTIVE_GUIDE.md** - Interactive mode guide
+- **SAMPLE_OUTPUT_FORMAT.md** - Shows Excel format
+- **README.md** - This file
 
-# Scrape all 2025 events
-df = scraper.scrape_all_events(season="2025")
+## HONEST ASSESSMENT
 
-# Filter for a specific athlete
-hodges_df = scraper.scrape_all_events(athlete_filter="Hodges")
+### What Works Great ✅
+- Scraping by season
+- Scraping multiple seasons
+- Excel export with exact format needed
+- Interactive menus
+- Quick testing
 
-# Export to Excel
-scraper.export_to_excel(df, "my_results.xlsx")
+### What Needs Work⚠️
+- Direct athlete search (use season + Excel filter instead)
+- Very old events (some may have different formats)
 
-# Work with the data directly
-print(df.head())
-print(df['Athlete'].unique())
-print(df.groupby('Athlete')['Time'].min())
-```
+### Recommended Workflow
+1. Scrape by season: `--season 2024`
+2. Filter in Excel by athlete name
+3. Export filtered results if needed
 
-## Data Analysis Examples
+This is the most reliable method currently.
 
-Once you have the Excel file, you can perform various analyses:
+## VERSION HISTORY
 
-### Find Best Times by Athlete
-Open the "Athlete Summary" sheet to see each athlete's best times
+- **Current Version:** Fixed output format (9 columns, SB/UH abbreviations, MM sizes)
+- **Known Issues:** Athlete direct search unreliable - use season scraping instead
 
-### Track Progress Over Time
-Filter the "All Results" sheet by athlete and sort by date
+## LICENSE
 
-### Compare Wood Species Performance
-Filter by wood species/size to see how times vary with different wood types
+For personal, educational, and research use. Data belongs to STIHL Timbersports.
 
-### Identify World Records
-Filter by the "Markers" column for "WR" (World Record)
+---
 
-## Tips
-
-1. **Be Respectful**: The default 1-second delay is reasonable. Don't make it too fast.
-
-2. **Start Small**: Use `--limit 5` first to test before scraping everything.
-
-3. **Athlete Names**: Use partial names for easier matching. "Hodges" will match "Nathaniel HODGES (Nate)"
-
-4. **Check the Output**: The script shows a sample of results before finishing so you can verify the data.
-
-5. **Season Filter**: Use the current year or recent years for the most relevant data.
-
+**Bottom Line:** Use season scraping (`--season 2024`), then filter in Excel. This works reliably and gives you exactly what you need.
